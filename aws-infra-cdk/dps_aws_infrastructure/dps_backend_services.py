@@ -9,7 +9,8 @@ from aws_cdk import (
     aws_ec2 as ec2,
     aws_ecs as ecs,
     aws_logs as logs,
-    aws_elasticloadbalancingv2 as elbv2
+    aws_elasticloadbalancingv2 as elbv2,
+    aws_ssm as ssm
 )
 from dps_global_definitions.dps_global_definitions import (dps_settings, ServiceDataFargate)
 
@@ -80,7 +81,47 @@ class DpsBackendServices(Stack):
                 container_vpc = container_vpc,
                 list_index = i
             )
+        
+        ###############################################################################################################
+        ## Store system wide parameters for the runtime
+        ###############################################################################################################
+        self.param_version = ssm.StringParameter(
+            self, 
+            dps_settings["application_prefix"] + "-version" + "-param",
+            description = "Version of Data Provider Service.",
+            parameter_name = "/" + dps_settings["application_prefix"] + "/system/version",
+            string_value = dps_settings["app_version"]
+        )
 
+        self.param_lb_url = ssm.StringParameter(
+            self, 
+            dps_settings["application_prefix"] + "-fargate-app-lb-dns" + "-param",
+            description = "Public DNS URL for web API of the Data Provider Service.",
+            parameter_name = "/" + dps_settings["application_prefix"] + "/system/public-api-url",
+            string_value = "http://" + self.container_loadbalancer.load_balancer_dns_name + "/" + dps_settings["app_version"] + "/"
+        )
+
+        self.param_log_level = ssm.StringParameter(
+            self, 
+            dps_settings["application_prefix"] + "-sys-logging-level" + "-param",
+            description = "Global logging level Data Provider Service.",
+            parameter_name = "/" + dps_settings["application_prefix"] + "/system/logging/log-level",
+            string_value = "INFO"
+        )
+
+        ###############################################################################################################
+        ### OUTPUT
+        ###############################################################################################################
+        CfnOutput(self, 
+            dps_settings["application_prefix"] + "-fargate-app-loadbalancer" + "-cfn-out", 
+            value = self.container_loadbalancer.load_balancer_arn)
+        
+        CfnOutput(self, 
+            dps_settings["application_prefix"] + "-fargate-app-lb-dns" + "-cfn-out", 
+            value = self.container_loadbalancer.load_balancer_dns_name)
+    
+    
+    ###############################################################################################################
     ###############################################################################################################
     ###############################################################################################################
     def create_backend_service(self, fargate_ecr_role: iam.Role, fargate_task_role: iam.Role, container_cluster: ecs.Cluster, container_vpc: ec2.Vpc, list_index: int) -> None:
@@ -133,14 +174,17 @@ class DpsBackendServices(Stack):
                 + dps_settings["aws_container_registry"] + ":" + self.services_data[list_index].name + "-" + dps_settings["app_version"]),
             environment = { 
                 # clear text, not for sensitive data
-                "STAGE": "test"},
+                "STAGE": "prototype",
+                "DPS_PREFIX": dps_settings["application_prefix"],
+                "DPS_VERSION": dps_settings["app_version"]
+            },
             logging = ecs.LogDrivers.aws_logs(
                 stream_prefix = self.services_data[list_index].name,
                 log_group = self.services_data[list_index].log_group
             ),
             port_mappings = [
                 ecs.PortMapping(container_port = self.services_data[list_index].listen_port, 
-                protocol = ecs.Protocol.TCP)]  # todo - make Host Port Nr a parameter, must be unique for each backend service
+                protocol = ecs.Protocol.TCP)] 
         )
 
         # Fargate Service for this backend 
@@ -175,11 +219,3 @@ class DpsBackendServices(Stack):
         CfnOutput(self, 
             self.services_data[list_index].name + "-service" + "-cfn-out",
             value = self.services_data[list_index].fargate_service.service_arn)
-            
-        #CfnOutput(self, 
-        #    dps_settings["application_prefix"] + "-fargate-app-loadbalancer" + "-cfn-out", 
-        #    value = self.container_loadbalancer.load_balancer_arn)
-        
-        #CfnOutput(self, 
-        #    dps_settings["application_prefix"] + "-fargate-app-lb-dns" + "-cfn-out", 
-        #    value = self.container_loadbalancer.load_balancer_dns_name)

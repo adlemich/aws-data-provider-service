@@ -1,6 +1,6 @@
 
-No      Backend-Service             internal-port       load-balancer-port      api-gw-path
+No      Backend-Service             docker-internal-port    ALB-target-grp-port     ALB-Route-and-rule
 ===============================================================================================================
-01      dps-administration-svc      5001                5001                    <API-GW-URL>:5001/admin
-02      dps-injest-enpoints-svc     5002                5002                    <API-GW-URL>:5002/injest-enpoints
-03      dps-provider-enpoints-svc   5003                5003                    <API-GW-URL>:5003/provider-enpoints
+01      dps-administration-svc      5001                    5001                    <ALB-URL>://<version>/admin
+02      dps-injest-enpoints-svc     5002                    5002                    <ALB-URL>://<version>/injest-enpoints
+03      dps-provider-enpoints-svc   5003                    5003                    <ALB-URL>://<version>/provider-enpoints

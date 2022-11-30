@@ -44,6 +44,12 @@ class DpsVPCFargateCluster(Stack):
             service = ec2.InterfaceVpcEndpointAwsService.CLOUDWATCH)
         self.container_vpc.add_interface_endpoint(dps_settings["application_prefix"] + "-fargate-cluster-vpc-ep-events",
             service = ec2.InterfaceVpcEndpointAwsService.CLOUDWATCH_EVENTS)
+        self.container_vpc.add_interface_endpoint(dps_settings["application_prefix"] + "-fargate-cluster-vpc-ep-sqs",
+            service = ec2.InterfaceVpcEndpointAwsService.SQS)
+        self.container_vpc.add_interface_endpoint(dps_settings["application_prefix"] + "-fargate-cluster-vpc-ep-sns",
+            service = ec2.InterfaceVpcEndpointAwsService.SNS)
+        self.container_vpc.add_interface_endpoint(dps_settings["application_prefix"] + "-fargate-cluster-vpc-ep-ssm",
+            service = ec2.InterfaceVpcEndpointAwsService.SSM)
         self.container_vpc.add_gateway_endpoint(dps_settings["application_prefix"] + "-fargate-cluster-vpc-ep-s3",
             service = ec2.GatewayVpcEndpointAwsService.S3)
 
