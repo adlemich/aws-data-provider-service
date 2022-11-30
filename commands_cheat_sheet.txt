@@ -1,0 +1,43 @@
+### CDK
+ 1) Build CloudFormation scripts from source
+    $ cd <aws-infra folder>
+    $ cdk synth   
+    $ cdk synth <stack name>
+ 2) List stacks
+    $ cdk List
+ 3) Deploy to CloudFormation
+    $ cdk deploy   
+    $ cdk deploy <stack name>
+ 4) Delete stack in CloudFormation
+    $ cdk destroy   
+    $ cdk destroy <stack name>    
+
+### DOCKER
+ 1) Build a service image
+    $ cd <svc folder>
+    $ docker build --tag dps/<svc_name>:v<version> .
+ 2) Tag an image with an additional tag
+    $ docker tag <image>:<version_old> <image>:<version_new>
+ 3) List images
+    $ docker images
+ 4) Run image in with console attachment and port exposure
+    $ docker run --publish 5000:5000 <image tag>
+ 5) Run image in detached mode with port exposure
+    $ docker run -d -p 5000:5000 <image tag>
+ 6) Check currently running images
+    $ docker ps
+ 7) Stop a currently running images
+    $ docker stop <container ID>
+ 8) Clean up the docker envrionment
+    $ docker container prune
+
+### FLASK APPLICATION 
+ 1) Run the application in debug locally.
+    $ cd <folder with app.py file>
+    $ flask run
+ 2) Run the application locally with public access on all IPs.
+    $ cd <folder with app.py file>
+    $ flask run --host=0.0.0.0
+ 3) Show all implemented routes the REST API
+    $ cd <folder with app.py file>
+    $ flask routes
