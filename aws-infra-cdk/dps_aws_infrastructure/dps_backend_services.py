@@ -22,17 +22,29 @@ class DpsBackendServices(Stack):
         
         super().__init__(scope, construct_id, **kwargs)
 
+        # Group for backend service technical IAM users
+        self.backend_users_grp = iam.Group(self, 
+            dps_settings["application_prefix"] + "-backend-users-grp",
+            managed_policies = [
+                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSQSReadOnlyAccess"),
+                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMFullAccess")
+            ],
+            group_name = dps_settings["application_prefix"] + "-backend-users-grp"
+        )
+
         # Task execution role that allows backend services to interact with AWS Services
-        # - SQS
+        # - SQS, SSM
         self.fargate_task_role = iam.Role(
             self,
             dps_settings["application_prefix"] + "-fargate-task-role",
             assumed_by = iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
             managed_policies = [
-                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSQSFullAccess")
+                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSQSReadOnlyAccess"),
+                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMFullAccess")
             ],
             role_name = dps_settings["application_prefix"] + "-fargate-task-role"
         )
+
         # ECS role that allows to pull images from ECR
         self.fargate_ecr_role = iam.Role(
             self,
@@ -68,9 +80,9 @@ class DpsBackendServices(Stack):
         ## Build the actual backend services 
         ###############################################################################################################
         self.services_data = [
-            ServiceDataFargate(name = "dps-administration-svc",    listen_port = 5001, routing_path = "/" + dps_settings["app_version"] + "/admin"),
-            ServiceDataFargate(name = "dps-injest-enpoints-svc",   listen_port = 5002, routing_path = "/" + dps_settings["app_version"] + "/ingest-endpoints"),
-            ServiceDataFargate(name = "dps-provider-enpoints-svc", listen_port = 5003, routing_path = "/" + dps_settings["app_version"] + "/provider-endpoints")
+            ServiceDataFargate(name = "dps-administration-svc",    listen_port = 5001, routing_path = "/" + dps_settings["app_version"] + "/admin/*"),
+            ServiceDataFargate(name = "dps-injest-enpoints-svc",   listen_port = 5002, routing_path = "/" + dps_settings["app_version"] + "/ingest-endpoints/*"),
+            ServiceDataFargate(name = "dps-provider-enpoints-svc", listen_port = 5003, routing_path = "/" + dps_settings["app_version"] + "/provider-endpoints/*")
         ]
 
         for i, svc in enumerate(self.services_data):
@@ -126,6 +138,19 @@ class DpsBackendServices(Stack):
     ###############################################################################################################
     def create_backend_service(self, fargate_ecr_role: iam.Role, fargate_task_role: iam.Role, container_cluster: ecs.Cluster, container_vpc: ec2.Vpc, list_index: int) -> None:
 
+        # create an IAM user for each service and link to the right group
+        self.services_data[list_index].service_iam_user = iam.User(self,
+            self.services_data[list_index].name + "-user",   
+            groups = [self.backend_users_grp],
+            user_name = self.services_data[list_index].name
+        )
+
+        # generate Secrets for this user
+        self.services_data[list_index].access_key = iam.AccessKey(self, 
+            self.services_data[list_index].name + "-ak", 
+            user = self.services_data[list_index].service_iam_user
+        ) 
+
         # Create a target group for the ALB for each backend service
         self.services_data[list_index].container_alb_target_grp = elbv2.ApplicationTargetGroup(
             self,
@@ -176,7 +201,10 @@ class DpsBackendServices(Stack):
                 # clear text, not for sensitive data
                 "STAGE": "prototype",
                 "DPS_PREFIX": dps_settings["application_prefix"],
-                "DPS_VERSION": dps_settings["app_version"]
+                "DPS_VERSION": dps_settings["app_version"],
+                "AWS_REGION":  dps_settings["aws_region"],
+                "AWS_KEY": self.services_data[list_index].access_key.access_key_id,
+                "AWS_SECRET": self.services_data[list_index].access_key.secret_access_key.unsafe_unwrap()
             },
             logging = ecs.LogDrivers.aws_logs(
                 stream_prefix = self.services_data[list_index].name,

@@ -10,10 +10,12 @@ aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --
 
 cd ./micro-services-python
 
-for dir in ./*/     
+for dir in ./dps*/
 do
     dir=${dir%*/}      # remove the trailing "/"
     DPS_SERVICE=${dir##*/}
+    echo $DPS_SERVICE
+
     echo BUILDING BACKEND SERVICE $DPS_SERVICE
     cd ./$DPS_SERVICE
     docker build --tag $AWS_CONTAINER_REGISTRY:$DPS_SERVICE-$DPS_VERSION .
@@ -23,5 +25,6 @@ do
     docker push $AWS_ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com/$AWS_CONTAINER_REGISTRY:$DPS_SERVICE-$DPS_VERSION
     cd ..
     echo =================================================
+
 done
 cd ..

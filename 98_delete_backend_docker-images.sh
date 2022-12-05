@@ -10,7 +10,7 @@ aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --
 
 cd ./micro-services-python
 
-for dir in ./*/     
+for dir in ./dps*/     
 do
     dir=${dir%*/}      # remove the trailing "/"
     DPS_SERVICE=${dir##*/}

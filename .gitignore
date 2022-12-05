@@ -131,3 +131,5 @@ dmypy.json
 # Project
 aws-infra-cdk/cdk.out/
 aws-infra-cdk/cdk.out/*
+commands_cheat_sheet.txt
+aws.txt

@@ -16,44 +16,44 @@ class DpsAdministrationService(DpsWebApiServiceBase):
 
     #####################################################################################
     def get_status(self) -> Response:
-        self.log("Handling get Status...")
+        self.flask_app.logger.debug("Handling get Status...")
 
-        response_set.status = HTTPStatus.OK
         response_set = jsonify(
-            result = response_set.status, 
+            result = HTTPStatus.OK, 
             message = "API service status OK!", 
             hints = "{ 'Service': '" + self.service_name + "'," + \
                 "'Log-Level': '" + self.flask_app.logger.getEffectiveLevel() + "'" +  \
                 " }"
         ) 
+        response_set.status = HTTPStatus.OK
         
         return response_set
 
     #####################################################################################
     def put_log_level(self, request: Request) -> Response:
-        self.log("Handling put_log_level...")
+        self.flask_app.logger.debug("Handling put_log_level...")
 
-        response_set.status = HTTPStatus.OK
         response_set = jsonify(
-            result = response_set.status, 
+            result = HTTPStatus.OK, 
             message = "OK", 
             hints = ""
         ) 
+        response_set.status = HTTPStatus.OK
 
         # We expect JSON payload like this: {"log-level": "DEBUG"}
         content_type = request.headers.get('Content-Type')
         if (content_type != 'application/json'):
-            response_set.status = HTTPStatus.BAD_REQUEST
             response_set = jsonify(
-                result = response_set.status, 
+                result = HTTPStatus.BAD_REQUEST, 
                 message = "Content-Type not supported! Only [application/json] is accepted.", 
                 hints = ""
             )
+            response_set.status = HTTPStatus.BAD_REQUEST
             return response_set 
 
         new_log_level = "n/a"
         new_log_level = request.json["log-level"]
-        self.log("Client request to change system log level to: [" + new_log_level + "]")
+        self.flask_app.logger.debug("Client request to change system log level to: [" + new_log_level + "]")
         
         # Set new level locally and in the AWS parameter store
         match_ok = True
@@ -68,7 +68,7 @@ class DpsAdministrationService(DpsWebApiServiceBase):
                 self.flask_app.logger.setLevel(logging.ERROR)
         else:
                 match_ok = False
-                self.log("Provided input: [" + new_log_level + "] was not recognized, will ignore and generate an error response.")
+                self.flask_app.logger.debug("Provided input: [" + new_log_level + "] was not recognized, will ignore and generate an error response.")
         
         # Check result and compose answer
         if not match_ok:

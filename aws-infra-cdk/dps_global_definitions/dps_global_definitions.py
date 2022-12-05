@@ -3,7 +3,8 @@ from dataclasses import dataclass
 from aws_cdk import (
     aws_ecs as ecs,
     aws_logs as logs,
-    aws_elasticloadbalancingv2 as elbv2
+    aws_elasticloadbalancingv2 as elbv2,
+    aws_iam as iam
 )
 
 ############################################################################
@@ -34,6 +35,7 @@ class ServiceDataFargate:
     fargate_service: ecs.FargateService = None
     fargate_svc_scaling: ecs.ScalableTaskCount = None
     container_alb_target_grp: elbv2.ApplicationTargetGroup = None
-
+    service_iam_user: iam.User = None
+    access_key: iam.AccessKey = None
     
 
