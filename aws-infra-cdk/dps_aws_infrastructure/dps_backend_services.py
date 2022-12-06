@@ -80,9 +80,9 @@ class DpsBackendServices(Stack):
         ## Build the actual backend services 
         ###############################################################################################################
         self.services_data = [
-            ServiceDataFargate(name = "dps-administration-svc",    listen_port = 5001, routing_path = "/" + dps_settings["app_version"] + "/admin/*"),
-            ServiceDataFargate(name = "dps-injest-enpoints-svc",   listen_port = 5002, routing_path = "/" + dps_settings["app_version"] + "/ingest-endpoints/*"),
-            ServiceDataFargate(name = "dps-provider-enpoints-svc", listen_port = 5003, routing_path = "/" + dps_settings["app_version"] + "/provider-endpoints/*")
+            ServiceDataFargate(name = "dps-administration-svc",     listen_port = 5001, routing_path = "/" + dps_settings["app_version"] + "/admin/*"),
+            ServiceDataFargate(name = "dps-injest-endpoints-svc",   listen_port = 5002, routing_path = "/" + dps_settings["app_version"] + "/ingest-endpoints/*"),
+            ServiceDataFargate(name = "dps-provider-endpoints-svc", listen_port = 5003, routing_path = "/" + dps_settings["app_version"] + "/provider-endpoints/*")
         ]
 
         for i, svc in enumerate(self.services_data):

@@ -2,5 +2,5 @@
 No      Backend-Service             docker-internal-port    ALB-target-grp-port     ALB-Route-and-rule
 ===============================================================================================================
 01      dps-administration-svc      5001                    5001                    <ALB-URL>://<version>/admin
-02      dps-injest-enpoints-svc     5002                    5002                    <ALB-URL>://<version>/injest-enpoints
-03      dps-provider-enpoints-svc   5003                    5003                    <ALB-URL>://<version>/provider-enpoints
+02      dps-injest-enpoints-svc     5002                    5002                    <ALB-URL>://<version>/injest-endpoints
+03      dps-provider-enpoints-svc   5003                    5003                    <ALB-URL>://<version>/provider-endpoints

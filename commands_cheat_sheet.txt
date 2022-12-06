@@ -41,3 +41,9 @@
  3) Show all implemented routes the REST API
     $ cd <folder with app.py file>
     $ flask routes
+
+
+### PIP and Python Modules
+  1) Install an own module locally and populate changes directly
+     $ cd ./micro-services-python/dps-shared
+     $ pip install -e .

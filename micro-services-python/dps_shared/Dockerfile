@@ -2,14 +2,14 @@
 
 FROM python:3.9.15-slim-bullseye
 
-WORKDIR /dps_svc_app
+WORKDIR /dps_shared
 
 COPY ./requirements.txt requirements.txt
 RUN python -m pip install --upgrade pip
 RUN pip3 install -r requirements.txt
 
-COPY ./rest_api_server/*.py ./
+COPY ./dps_shared ./dps_shared
+COPY ./setup.py ./setup.py
 
-EXPOSE 5003
-
-CMD [ "python3", "-m" , "flask", "run", "--host=0.0.0.0", "--port=5003"]
+RUN pip install .
+RUN pip3 list

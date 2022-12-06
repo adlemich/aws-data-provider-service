@@ -2,8 +2,7 @@ from flask import Flask, Response, Request, jsonify
 from http import HTTPStatus
 import logging
 import json
-
-from dps_web_api_service_base import DpsWebApiServiceBase
+from dps_shared.dps_web_api_service_base import DpsWebApiServiceBase
 
 #####################################################################################
 class DpsAdministrationService(DpsWebApiServiceBase):
@@ -21,9 +20,7 @@ class DpsAdministrationService(DpsWebApiServiceBase):
         response_set = jsonify(
             result = HTTPStatus.OK, 
             message = "API service status OK!", 
-            hints = "{ 'Service': '" + self.service_name + "'," + \
-                "'Log-Level': '" + self.flask_app.logger.getEffectiveLevel() + "'" +  \
-                " }"
+            hints = "{{'Service': '{}', 'Log-Level': '{}'}}".format(self.service_name, self.flask_app.logger.getEffectiveLevel())
         ) 
         response_set.status = HTTPStatus.OK
         
